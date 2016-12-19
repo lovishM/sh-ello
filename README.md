@@ -1,6 +1,4 @@
-# --------------
 #  Shell trials
-# --------------
 
 In the beginning there was shell, and we haven't needed much of anything after that.
 
