@@ -56,7 +56,7 @@ learn() {
     # Get the total word count
     totalWordCount=$( __getWordsCount )
 
-    header "Hello my eager student! I will call you buddhuu"
+    header "Hello my eager student! Let's get learning"
     log -n "lb" "Press [CTRL-C] to exit\n\n"
 
     [ ${askedWordCount} -eq ${totalWordCount} ] \
