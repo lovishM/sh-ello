@@ -13,19 +13,19 @@ It is quite an easy to use command for easy searching of file with extensions.
 
  - Searching in the current folder:
 
-    $ se -- java
+		$ se -- java
 	
     This'll list down all the possible files with *java* extension in the current directory.
 
  - Searching in another directory: 
 
-    $ se -- java ./mydir
+		$ se -- java ./mydir
 
    This'll list down all the possible files with *java* extension in the *mydir* directory.
    
  - Searching for a file with partial matching name:
 	
-    $ se myClass java
+		$ se myClass java
     This'll list down all *java* files containing word *myClass* in them (with ignored case).
 
 
@@ -40,11 +40,11 @@ This sourcing would enable the commands **learn** and **add** to the environment
 
 - To simply start learning run the following
 
-    $ learn
+		$ learn
 
 - To add new words execute
 
-    $ add
+		$ add
 
 ## Flash cards using **flash-em**
 
@@ -53,7 +53,7 @@ way more attractive to work with (as you'd realize).
 
 The following is the usage assuming script is kept in **${HOME}/flash-em.sh**
 
-    $ ~/flash-em.sh
+		$ ~/flash-em.sh
 
 Or you could create an alias in **${HOME}/.bashrc**, like so
 
