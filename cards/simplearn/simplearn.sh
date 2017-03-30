@@ -18,7 +18,7 @@ learn() {
         local _wordsFile=${_baseDir}/words.txt
         local _tmpFile=${_baseDir}/new
 
-        [ -e ${_wordsFile} ] && echo 0 && return 0
+        [ ! -e ${_wordsFile} ] && echo 0 && return 0
 
         cat ${_wordsFile} \
             | grep -v '^[ 	]*$' \
@@ -60,7 +60,7 @@ learn() {
     log -n "lb" "Press [CTRL-C] to exit\n\n"
 
     [ ${askedWordCount} -eq ${totalWordCount} ] \
-        && log -n "red" "Oops, no words. Use *add* to insert them" && return 0
+        && log "red" "Oops, no words. Use *add* to insert them" && return 0
 
     # Start asking the questions
     while [ ${askedWordCount} -lt ${totalWordCount} ]
@@ -85,7 +85,7 @@ learn() {
         askedWordCount=$(( askedWordCount + 1 ))
     done
 
-    log -n "blue" "Good luck\n\n"
+    # log -n "blue" "Good luck\n\n"
 }
 
 unset add 2>/dev/null
