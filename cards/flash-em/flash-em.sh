@@ -97,12 +97,15 @@ learn() {
     tput smcup
 
     # Start asking the questions
-    while [ ${askedWordCount} -lt ${totalWordCount} ]
+    while [ ${askedWordCount} -le ${totalWordCount} ]
     do
         # Get the captured word
-        [ $toGenerate -eq 0 ] \
-            && capturedWord=$( __getOneRandomWord ${totalWordCount} ${playedWords[@]} ) \
-            && askedWordCount=$(( askedWordCount + 1 ))
+        if [ $toGenerate -eq 0 ]; then
+            askedWordCount=$(( askedWordCount + 1 ))
+            [ ${askedWordCount} -gt ${totalWordCount} ] && break
+
+            capturedWord=$( __getOneRandomWord ${totalWordCount} ${playedWords[@]} )
+        fi
 
         toGenerate=1
 
@@ -115,14 +118,14 @@ learn() {
                     if [[ "${tmp}" == "[" ]]; then
                         read -rsn1 -t 0.1 tmp
                         case "$tmp" in
-                            "D") toGenerate=0; break ;;
-                            "C") toGenerate=0; cursor=0; break ;;
+                            "D") toGenerate=0 ;;
+                            "C") toGenerate=0; cursor=0 ;;
                             "B"|"A")
                                 [ $cursor -eq 0 ] && cursor=1 || cursor=0
-                                break;
                         esac
                     fi
                     read -rsn5 -t 0.1
+                    break;
                     ;;
                 q)  tput rmcup
                     exit;;
@@ -175,11 +178,9 @@ learn() {
             esac
         done
 
-        playedWords=( echo ${playedWords[@]} ${capturedWord} ) 
+        playedWords=( $( echo ${playedWords[@]} ) $( echo ${capturedWord} | cut -f1 -d: | tr -d ' ' ) ) 
     done
     tput rmcup
-
-    printf "Good luck\n\n"
 }
 
 # Paint the slides
