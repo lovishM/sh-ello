@@ -1,16 +1,4 @@
-#!/usr/bin/env bash
-
-# -------------------------------------------------------------
-# Needs imagemagick tool to be installed
-#   Assumes commands `convert` and `mogrify` to be available
-# -------------------------------------------------------------
-# Changes extra heavy image files to compressed ones which are
-# still as good to read in a tablet or a laptop
-# -------------------------------------------------------------
-# Run in the folder containing CBR or CBZ files, and they'll be
-# compressed and kept in `./compressed` folder, and `processed`
-# folder will contain the original files
-# -------------------------------------------------------------
+:
 
 # Lower limit of compression
 _lower_limit=${1:-35}
