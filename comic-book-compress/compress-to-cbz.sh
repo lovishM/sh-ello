@@ -64,7 +64,30 @@ compress() {
 
         # Compress (uses mogrify, can use convert too)
         d="$(pwd)/work/compressed"
-        __x="$( find ./work -type d | tail -1 )"
+
+        # Combine Directories / remove them
+        if [ "$(find ./work -type d | grep -v -e '^./work$' -e '^./work/__MACOSX$' | wc -l )" -gt 1 ]; then
+            __x="work/allfiles"
+            mkdir -p ./${__x}
+            find ./work -type f | grep -v -e '__MACOSX$' -e "${__x}$" | while read __c_dir
+            do
+                # ----------------------------------------------------------------------------------------------------------
+                # May not work efficiently, especially if there are extra file in parent directory
+                # ----------------------------------------------------------------------------------------------------------
+                #
+                # __m_file="$( echo ${__c_dir} | sed 's^./work/\([^0123456789][^/]*/\)*\([0-9].*\)$\2g' | tr '/' '-' )"
+                # ( echo "${__m_file}" | grep -- '^-work' ) || mv "${__c_dir}" ./${__x}/"${__m_file}"
+                #
+                # ----------------------------------------------------------------------------------------------------------
+
+                __m_file="$( echo ${__c_dir} | sed 's^./work/\(.*\)$\1g' | tr '/' '-' )"
+                mv "${__c_dir}" ./${__x}/"${__m_file}"
+            done
+        else
+            __x="$( find ./work -maxdepth 1 -type d | grep -v -e '^./work$' -e '^./work/__MACOSX$' )"
+            [ -z "${__x}" ] && __x="./work"
+        fi
+
         mkdir -p "${d}"
         cd "${__x}"
 
@@ -127,11 +150,12 @@ compress() {
 
         # Compress and create cbz
         ( cd work/compressed && zip -qr "${cwd}"/compressed/"${__d}"/"${name}".cbz * ) || return 1
+
         mkdir -p "${cwd}"/processed/"${__d}"
         mv "${cwd}"/"${f}" "${cwd}"/processed/"${f}"
         echo " done (ratio = ${percentage})"
 
-    done < <( find . -type f -name '*.cb[zr]' -not \( -path './compressed/*' -prune \) -not \( -path './processed/*' -prune \) )
+    done < <( find . -type f -name '*.cb[zr]' -not \( -path './compressed/*' -prune \) -not \( -path './processed/*' -prune \) | sort )
 }
 
 if ! compress
