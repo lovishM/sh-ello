@@ -81,10 +81,10 @@ compress() {
         _max=$( du -k * | sort -nk 1 | tail -1 | awk '{print $1}' )
         _copy=true
 
-        if [ ${_max} -le 500 ]; then
+        if [ ${_max} -le 600 ]; then
             _copy=false
         else
-            percentage=$(( 50000 / _max ))
+            percentage=$(( 60000 / _max ))
             [ ${percentage} -lt ${_lower_limit} ] && percentage=${_lower_limit}
             [ ${percentage} -gt 90 ] && _copy=false
         fi
