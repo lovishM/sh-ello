@@ -42,7 +42,6 @@ compress() {
 
         [ ${#__d} -gt 2 ] && printf "%-150s " "[${count}] Working on file [.../${__f}]" || printf "%-150s " "[${count}] Working on file [${f}]"
 
-        _total=$( du -k "${f}" | awk '{print $1}' )
         rm -fr work
         mkdir -p work
 
@@ -91,8 +90,9 @@ compress() {
         mkdir -p "${d}"
         cd "${__x}"
 
-        _fcount=$( ls | wc -l )
-        _per=$(( _total / _fcount ))
+        _total=$( du -sk . | awk '{print $1}' )
+        _count=$( ls | wc -l )
+        _per=$(( _total / _count ))
         _copy=true
 
         if [ ${_per} -le 500 ]; then
@@ -153,7 +153,17 @@ compress() {
 
         mkdir -p "${cwd}"/processed/"${__d}"
         mv "${cwd}"/"${f}" "${cwd}"/processed/"${f}"
-        echo " done (ratio = ${percentage})"
+
+        __prev=$( du -k "${cwd}"/processed/"${f}" | awk '{print $1}' )
+        __curr=$( du -k "${cwd}"/compressed/"${f}" | awk '{print $1}' )
+
+        if [ ${__curr} -gt ${__prev} ]; then
+            __final_percent="+$(( ( (__curr - __prev) * 100) / __prev ))%"
+        else
+            __final_percent="-$(( ( (__prev - __curr) * 100) / __prev ))%"
+        fi
+
+        echo " done (ratio = ${percentage}, done = ${__final_percent})"
 
     done < <( find . -type f -name '*.cb[zr]' -not \( -path './compressed/*' -prune \) -not \( -path './processed/*' -prune \) | sort )
 }
