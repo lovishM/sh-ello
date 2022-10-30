@@ -42,7 +42,7 @@ compress() {
 
         [ ${#__d} -gt 2 ] && printf "%-150s " "[${count}] Working on file [.../${__f}]" || printf "%-150s " "[${count}] Working on file [${f}]"
 
-        rm -fr work
+        rm -fr work || return 1
         mkdir -p work
 
         # Unpack
@@ -128,6 +128,7 @@ compress() {
 
         _jpeg_count=$( find . -name '*.jpg' | wc -l )
         _png_count=$( find . -name '*.png' | wc -l )
+        _ext_files=""
 
         if [ ${_jpeg_count} -gt 0 ]; then
             _ext_files="*.jpg"
@@ -155,7 +156,7 @@ compress() {
         mv "${cwd}"/"${f}" "${cwd}"/processed/"${f}"
 
         __prev=$( du -k "${cwd}"/processed/"${f}" | awk '{print $1}' )
-        __curr=$( du -k "${cwd}"/compressed/"${f}" | awk '{print $1}' )
+        __curr=$( du -k "${cwd}"/compressed/"${__d}"/"${name}".cbz | awk '{print $1}' )
 
         if [ ${__curr} -gt ${__prev} ]; then
             __final_percent="+$(( ( (__curr - __prev) * 100) / __prev ))%"
