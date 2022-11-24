@@ -52,58 +52,112 @@ compress() {
 
         [ ${#__d} -gt 2 ] && printf "%-150s " "[${count}] Working on file [.../${__f}]" || printf "%-150s " "[${count}] Working on file [${f}]"
 
-        rm -fr work
+        rm -fr work || return 1
         mkdir -p work
 
         # unzip the epub file
         ( cd work && unzip -q ../"$f" ) || return 1
         printf "."
 
+        work_done=false
+
         # Find the images directory
-        __x=$( find "$(pwd)/work" \( -name 'images' -o -name 'Images' \) -type d )
+        while read __x
+        do
+            # If nothing found skip
+            if [ -z "${__x}" ]; then
+                continue
+            fi
 
-        if [ -z "${__x}" ]; then
-            skip_and_move "${cwd}" "${f}"
-            continue
-        fi
+            # If folder ~ 4k, move on
+            if [ $( du -k "${__x}" | awk '{print $1}' ) -le 4 ]; then
+                continue
+            fi
 
-        # Skip is folder is ~ 4k
-        if [ $( du -k "${__x}" | awk '{print $1}' ) -le 4 ]; then
-            skip_and_move "${cwd}" "${f}"
-            continue
-        fi
+            d="$( dirname "${__x}" )/_X"
 
-        d="$( dirname "${__x}" )/_X"
+            mkdir -p "${d}"
+            cd "${__x}"
 
-        mkdir -p "${d}"
-        cd "${__x}"
+            _max=$( du -k * | sort -nk 1 | tail -1 | awk '{print $1}' )
+            _copy=true
 
-        _max=$( du -k * | sort -nk 1 | tail -1 | awk '{print $1}' )
-        _copy=true
+            if [ ${_max} -le 600 ]; then
+                _copy=false
+            else
+                percentage=$(( 60000 / _max ))
+                [ ${percentage} -lt ${_lower_limit} ] && percentage=${_lower_limit}
+                [ ${percentage} -gt 90 ] && _copy=false
+            fi
 
-        if [ ${_max} -le 600 ]; then
-            _copy=false
-        else
-            percentage=$(( 60000 / _max ))
-            [ ${percentage} -lt ${_lower_limit} ] && percentage=${_lower_limit}
-            [ ${percentage} -gt 90 ] && _copy=false
-        fi
+            if ! $_copy
+            then
+                cd "${cwd}"
+                rm -fr "${d}" || return 1
+                continue
+            fi
 
-        if ! $_copy
+            work_done=true
+
+            # Compress (uses mogrify, can use convert too)
+            ( mogrify -resize ${percentage}% -path "${d}" * ) || return 1
+
+            cd "${cwd}"
+            printf "."
+
+            # Move all images
+            mv "${d}"/* "${__x}"/
+            rm -fr "${d}" || return 1
+        done < <( find "$(pwd)/work" \( -name 'images' -o -name 'Images' -o -name 'image' -o -name 'Image' \) -type d )
+
+        if ! ${work_done}
         then
             skip_and_move "${cwd}" "${f}"
             continue
         fi
 
-        # Compress (uses mogrify, can use convert too)
-        ( mogrify -resize ${percentage}% -path "${d}" * ) || return 1
+        # if [ -z "${__x}" ]; then
+        #     skip_and_move "${cwd}" "${f}"
+        #     continue
+        # fi
 
-        cd "${cwd}"
-        printf "."
+        # # Skip is folder is ~ 4k
+        # if [ $( du -k "${__x}" | awk '{print $1}' ) -le 4 ]; then
+        #     skip_and_move "${cwd}" "${f}"
+        #     continue
+        # fi
 
-        # Move all images
-        mv "${d}"/* "${__x}"/
-        rm -fr "${d}"
+        # d="$( dirname "${__x}" )/_X"
+
+        # mkdir -p "${d}"
+        # cd "${__x}"
+
+        # _max=$( du -k * | sort -nk 1 | tail -1 | awk '{print $1}' )
+        # _copy=true
+
+        # if [ ${_max} -le 600 ]; then
+        #     _copy=false
+        # else
+        #     percentage=$(( 60000 / _max ))
+        #     [ ${percentage} -lt ${_lower_limit} ] && percentage=${_lower_limit}
+        #     [ ${percentage} -gt 90 ] && _copy=false
+        # fi
+
+        # if ! $_copy
+        # then
+        #     skip_and_move "${cwd}" "${f}"
+        #     continue
+        # fi
+
+        # # Compress (uses mogrify, can use convert too)
+        # ( mogrify -resize ${percentage}% -path "${d}" * ) || return 1
+
+        # cd "${cwd}"
+        # printf "."
+
+        # # Move all images
+        # mv "${d}"/* "${__x}"/
+        # rm -fr "${d}"
 
         # Compress and create epub
         ( cd work/ && zip -qrX "${cwd}"/compressed/"${__d}"/"${name}".epub mimetype $(ls |xargs echo| sed 's/mimetype//g') -x *.DS_Store ) || return 1
