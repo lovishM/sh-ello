@@ -150,7 +150,7 @@ compress() {
         printf "."
 
         # Compress and create cbz
-        ( cd work/compressed && zip -qr "${cwd}"/compressed/"${__d}"/"${name}".cbz * ) || return 1
+        ( cd work/compressed && zip -qr "${cwd}"/compressed/"${__d}"/"${name}".cbz -- * ) || return 1
 
         mkdir -p "${cwd}"/processed/"${__d}"
         mv "${cwd}"/"${f}" "${cwd}"/processed/"${f}"
